@@ -1,0 +1,15 @@
+{
+  "QA": {
+    "google": "https://www.femina.mk",
+    "loremipsum": "https://www.femina.mk",
+    "spotify": "https://www.femina.mk",
+    "vogue": "https://www.femina.mk",
+    "femina":"https://www.femina.mk"
+  },
+  "STAGE": {
+    "google": "https://www.google.com",
+    "loremipsum": "https://time.mk",
+    "spotify": "https://open.spotify.com",
+    "vogue": "https://www.vogue.com/fashion-shows/fall-2026-ready-to-wear/tory-burch/slideshow"
+  }
+}

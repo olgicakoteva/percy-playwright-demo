@@ -1,0 +1,40 @@
+# Node / build
+node_modules/
+dist/
+build/
+out/
+coverage/
+*.lcov
+
+# Playwright
+playwright/.cache/
+.playwright/
+.browsers/
+test-results/
+videos/
+screenshots/
+traces/
+
+# Percy
+.percy/
+
+# Env & logs
+.env
+.env.local
+.env.*.local
+logs
+*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.code-workspace
+
+# TypeScript
+*.tsbuildinfo
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
