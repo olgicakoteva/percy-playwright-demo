@@ -5,8 +5,9 @@
   "scripts": {
     "test": "playwright test",
     "percy": "percy exec -- playwright test",
-    "qavisualregression": "ENV=QA npx percy exec -- npx playwright test",
-    "stagevisualregression": "ENV=STAGE npx percy exec -- npx playwright test"
+    "qavisualregression": "cross-env PERCY_TOKEN=web_f3c37cae025594201d77909819000c8d9d704e545132a4183a33cffac5630118 ENV=QA percy exec -- npx playwright test",
+    "stagevisualregression": "cross-env PERCY_TOKEN=web_f3c37cae025594201d77909819000c8d9d704e545132a4183a33cffac5630118 ENV=STAGE percy exec -- npx playwright test",
+    "allvisualregression": "npm run qavisualregression && npm run stagevisualregression"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "@percy/cli": "^1.31.8",
     "@percy/playwright": "^1.0.10",
     "@playwright/test": "^1.58.2",
+    "cross-env": "^10.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
