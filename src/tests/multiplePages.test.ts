@@ -16,7 +16,9 @@ test("Navigate and snapshot all pages for selected environment", async ({ page }
       await page.waitForTimeout(2000);
 
       const label = pageName.charAt(0).toUpperCase() + pageName.slice(1);
-      await percySnapshot(page, `${label} Snapshot [${env}]`);
+      await percySnapshot(page, `${label} Snapshot`, {
+        widths: [1600, 768, 320]
+      });
     });
   }
 });
