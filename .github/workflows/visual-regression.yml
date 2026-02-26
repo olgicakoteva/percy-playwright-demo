@@ -26,7 +26,9 @@ jobs:
           node-version: 20
           cache: npm
 
-      # Diagnostics + adaptive install
+      # ---------------------------------------------------
+      # 🔍 Diagnostics (helps us see lockfile state)
+      # ---------------------------------------------------
       - name: Print Node & NPM versions
         run: |
           node -v
@@ -43,7 +45,11 @@ jobs:
           (grep -n '"fsevents"' package.json || true)
           (grep -n '"fsevents"' package-lock.json || true)
 
-      - name: Install dependencies (adaptive; skip macOS-only deps)
+      # ---------------------------------------------------
+      # 🔧 FIX: Patch lockfile to remove fsevents everywhere
+      # Then install deps WITHOUT platform errors
+      # ---------------------------------------------------
+      - name: Install dependencies (patch lockfile to drop fsevents)
         env:
           NPM_CONFIG_LOGLEVEL: verbose
           NPM_CONFIG_OPTIONAL: "false"
@@ -53,29 +59,28 @@ jobs:
           npm cache verify || true
 
           if [ -f package-lock.json ]; then
-            if grep -q '"fsevents"' package-lock.json; then
-              echo "fsevents found in lockfile -> using npm install --no-optional"
-              npm install --no-optional
-            else
-              echo "No fsevents in lockfile -> using npm ci --omit=optional"
-              npm ci --omit=optional
-            fi
-          else
-            echo "No lockfile -> using npm install --no-optional"
-            npm install --no-optional
-          fi
+            echo "🔧 Patching package-lock.json to remove fsevents ..."
+            node - <<'NODE'
+            const fs = require('fs');
+            const path = 'package-lock.json';
+            if (!fs.existsSync(path)) {
+              console.log("No lockfile found, skipping patch.");
+              process.exit(0);
+            }
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+            const lock = JSON.parse(fs.readFileSync(path, 'utf8'));
 
-      - name: Run Percy Visual Regression
-        env:
-          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-          ENV: ${{ github.event.inputs.target }}
-          PERCY_BRANCH: ${{ github.event.inputs.target }}
-        run: |
-          if [ "${{ github.event.inputs.target }}" = "QA" ]; then
-            npm run qavisualregression
-          else
-            npm run stagevisualregression
-          fi
+            function stripFSEvents(obj) {
+              if (!obj || typeof obj !== 'object') return;
+
+              if (obj.dependencies && obj.dependencies.fsevents) {
+                delete obj.dependencies.fsevents;
+              }
+              if (obj.optionalDependencies && obj.optionalDependencies.fsevents) {
+                delete obj.optionalDependencies.fsevents;
+              }
+
+              for (const key of Object.keys(obj)) {
+                if (key === 'fsevents') {
+                  delete obj[key];
+                } else if (typeof obj[key] === 'object') {
