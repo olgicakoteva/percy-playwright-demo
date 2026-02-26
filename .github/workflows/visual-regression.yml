@@ -1,0 +1,39 @@
+name: Visual Regression
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Choose visual test target: QA or STAGE"
+        required: true
+        default: "QA"
+        type: choice
+        options:
+          - QA
+          - STAGE
+
+jobs:
+  visual-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Percy Visual Regression
+        run: |
+          export PERCY_TOKEN=${{ secrets.PERCY_TOKEN }}
+          export ENV=${{ github.event.inputs.target }}
+          export PERCY_BRANCH=${{ github.event.inputs.target }}
+          npm run "${{ github.event.inputs.target == 'QA' && 'qavisualregression' || 'stagevisualregression' }}"
