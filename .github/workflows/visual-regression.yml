@@ -1,4 +1,3 @@
-
 name: Visual Regression
 
 on:
@@ -41,41 +40,53 @@ jobs:
           fi
           grep -R "fsevents" . || true
 
+      # ---------------------------------------------------
+      # FIX: REMOVE all fsevents entries from lockfile
+      # ---------------------------------------------------
       - name: Patch lockfile to remove fsevents
         run: |
           if [ -f package-lock.json ]; then
             echo "Patching package-lock.json to remove fsevents..."
+
             node -e "
 const fs = require('fs');
 const path = 'package-lock.json';
-if (!fs.existsSync(path)) { process.exit(0); }
+if (!fs.existsSync(path)) process.exit(0);
+
 let lock = JSON.parse(fs.readFileSync(path, 'utf8'));
 
 function strip(obj) {
   if (!obj || typeof obj !== 'object') return;
   if (obj.dependencies && obj.dependencies.fsevents) delete obj.dependencies.fsevents;
   if (obj.optionalDependencies && obj.optionalDependencies.fsevents) delete obj.optionalDependencies.fsevents;
+
   for (const k of Object.keys(obj)) {
     if (k === 'fsevents') delete obj[k];
     else if (typeof obj[k] === 'object') strip(obj[k]);
   }
 }
+
 strip(lock);
+
 if (lock.packages) {
   for (const k of Object.keys(lock.packages)) {
     if (k.includes('fsevents')) delete lock.packages[k];
   }
 }
+
 fs.writeFileSync(path, JSON.stringify(lock, null, 2));
 console.log('fsevents removed from lockfile');
-"
+            "
           fi
 
       - name: Install dependencies safely
         run: |
           if [ -f package-lock.json ]; then
             echo "Running npm ci --omit=optional --omit=dev"
-            npm ci --omit=optional --omit=dev || (echo "ci failed, falling back to npm install"; npm install --no-optional --omit=dev)
+            npm ci --omit=optional --omit=dev || (
+              echo "npm ci failed, falling back to npm install"
+              npm install --no-optional --omit=dev
+            )
           else
             echo "No lockfile -> npm install --no-optional --omit=dev"
             npm install --no-optional --omit=dev
