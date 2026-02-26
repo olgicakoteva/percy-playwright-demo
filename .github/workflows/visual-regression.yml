@@ -24,16 +24,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --omit=optional
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Run Percy Visual Regression
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+          ENV: ${{ github.event.inputs.target }}
+          PERCY_BRANCH: ${{ github.event.inputs.target }}
         run: |
-          export PERCY_TOKEN=${{ secrets.PERCY_TOKEN }}
-          export ENV=${{ github.event.inputs.target }}
-          export PERCY_BRANCH=${{ github.event.inputs.target }}
-          npm run "${{ github.event.inputs.target == 'QA' && 'qavisualregression' || 'stagevisualregression' }}"
+          if [ "${{ github.event.inputs.target }}" = "QA" ]; then
+            npm run qavisualregression
+          else
+            npm run stagevisualregression
+          fi
