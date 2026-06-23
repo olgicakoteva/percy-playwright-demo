@@ -5,8 +5,8 @@ export default defineConfig({
   testDir: "src/tests",
   timeout: 120000, 
 
-  // Optional: be explicit about file pattern (defaults already include *.test.ts)
-  testMatch: ["**/*.test.ts"],
+  // Optional: be explicit about file pattern 
+  testMatch: ["**/*.spec.ts", "**/*.test.ts"],
 
   use: {
     headless: true,
